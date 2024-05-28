@@ -1,7 +1,8 @@
 import cv2
 import time
-from  motors  import  Motor
+from motors import Motor
 import lanecurve
+from picamera2 import Picamera2
 
 # Constants for motor control
 FORWARD_SPEED = 0.5
@@ -9,18 +10,20 @@ TURN_RATE = 0.3
 SLEEP_TIME = 0.1  # Time to wait between updates
 
 # Initialize motors (pin configuration might vary based on your setup)
-motor =  Motor(2, 3, 4, 17, 22, 27)
+motor = Motor(2, 3, 4, 17, 22, 27)
 
-# Initialize the camera (adjust index if necessary)
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Open default camera
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Set desired frame width
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Set desired frame height
+# Initialize the camera (adjust configuration if necessary)
+picam2 = Picamera2()
+picam2.preview_configuration.main.size = (640, 480)
+picam2.preview_configuration.main.format = "RGB888"  # 8 bits
+picam2.start()
 
 # Main loop
 while True:
     # Read a frame from the camera
-    success, img = cap.read()
-    if not success:
+    img = picam2.capture_array()
+    
+    if img is None:
         print("Error: Failed to read frame from camera")
         break
 
@@ -32,12 +35,12 @@ while True:
     print("Detected curve:", curve)
 
     # Determine steering based on curve
-    if curve > 0.1:  # Turn right if curve is positive::callmoveright
-        Motor.move(FORWARD_SPEED, TURN_RATE, SLEEP_TIME)
-    elif curve < -0.1:  # Turn left if curve is negative::callmoveleft
-        Motor.move(FORWARD_SPEED, -TURN_RATE, SLEEP_TIME)
+    if curve > 0.1:  # Turn right if curve is positive
+        motor.move(FORWARD_SPEED, TURN_RATE, SLEEP_TIME)
+    elif curve < -0.1:  # Turn left if curve is negative
+        motor.move(FORWARD_SPEED, -TURN_RATE, SLEEP_TIME)
     else:  # Move forward if curve is near zero
-        Motor.move(FORWARD_SPEED, 0, SLEEP_TIME)
+        motor.move(FORWARD_SPEED, 0, SLEEP_TIME)
 
     # Add a small delay to avoid overloading the system
     time.sleep(0.05)
@@ -47,6 +50,6 @@ while True:
         break
 
 # Cleanup and release resources
-Motor.stop()
-cap.release()
+motor.stop()
+picam2.stop()
 cv2.destroyAllWindows()
