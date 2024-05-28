@@ -1,14 +1,15 @@
 import cv2
 import numpy as np
+from picamera2 import Picamera2
 import utilities
 
 curveList = []
 avgVal = 10
 
-
 def getLaneCurve(img, display=2):
     imgCopy = img.copy()
     imgResult = img.copy()
+    
     #### STEP 1
     imgThres = utilities.thresholding(img)
 
@@ -23,8 +24,7 @@ def getLaneCurve(img, display=2):
     curveAveragePoint, imgHist = utilities.getHistogram(imgWarp, display=True, minPer=0.9)
     curveRaw = curveAveragePoint - middlePoint
 
-    #### SETP 4
-    # Averaging will allow smooth motion and will avoid any dramatic movements.
+    #### STEP 4
     curveList.append(curveRaw)
     if len(curveList) > avgVal:
         curveList.pop(0)
@@ -47,40 +47,46 @@ def getLaneCurve(img, display=2):
             w = wT // 20
             cv2.line(imgResult, (w * x + int(curve // 50), midY - 10),
                      (w * x + int(curve // 50), midY + 10), (0, 0, 255), 2)
-        # fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
-        # cv2.putText(imgResult, 'FPS ' + str(int(fps)), (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (230, 50, 50), 3);
+
     if display == 2:
         imgStacked = utilities.stackImages(0.7, ([img, imgWarpPoints, imgWarp],
-                                             [imgHist, imgLaneColor, imgResult]))
-
+                                                 [imgHist, imgLaneColor, imgResult]))
         cv2.imshow('ImageStack', imgStacked)
     elif display == 1:
-        cv2.imshow('Resutlt', imgResult)
+        cv2.imshow('Result', imgResult)
 
     #### NORMALIZATION
     curve = curve / 100
-    if curve > 1: curve == 1
-    if curve < -1: curve == -1
+    if curve > 1: curve = 1
+    if curve < -1: curve = -1
 
     return curve
 
-
 if __name__ == '__main__':
-    cv2.CAP_DSHOW = 700  # Windows-specific
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    # Initialize the camera (adjust configuration if necessary)
+    picam2 = Picamera2()
+    picam2.preview_configuration.main.size = (640, 480)
+    picam2.preview_configuration.main.format = "RGB888"  # 8 bits
+    picam2.start()
+
     intialTrackBarVals = [102, 80, 20, 214]
-    u=utilities.initializeTrackbars(intialTrackBarVals)
+    utilities.initializeTrackbars(intialTrackBarVals)
     frameCounter = 0
+
     while True:
         frameCounter += 1
-        if cap.get(cv2.CAP_PROP_FRAME_COUNT) == frameCounter:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        if frameCounter >= picam2.frames:
             frameCounter = 0
 
-        success, img = cap.read()
+        img = picam2.capture_array()
         img = cv2.resize(img, (480, 240))
         curve = getLaneCurve(img, display=2)
         print(curve)
         print(curveList)
-        # cv2.imshow('Vid',img)
-        cv2.waitKey(1)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # Cleanup and release resources
+    cv2.destroyAllWindows()
+    picam2.stop()
