@@ -40,13 +40,14 @@ def getLaneCurve(img, display=2):
         imgLaneColor = cv2.bitwise_and(imgInvWarp, imgLaneColor)
         imgResult = cv2.addWeighted(imgResult, 1, imgLaneColor, 1, 0)
         midY = 450
-        cv2.putText(imgResult, str(curve), (wT // 2 - 80, 85), cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 255), 3)
-        cv2.line(imgResult, (wT // 2, midY), (wT // 2 + (curve * 3), midY), (255, 0, 255), 5)
-        cv2.line(imgResult, ((wT // 2 + (curve * 3)), midY - 25), (wT // 2 + (curve * 3), midY + 25), (0, 255, 0), 5)
-        for x in range(-30, 30):
-            w = wT // 20
-            cv2.line(imgResult, (w * x + int(curve // 50), midY - 10),
-                     (w * x + int(curve // 50), midY + 10), (0, 0, 255), 2)
+      # Corrected lines using integer values for endpoints
+cv2.line(imgResult, (int(wT // 2), int(midY)), (int(wT // 2 + (curve * 3)), int(midY)), (255, 0, 255), 5)
+cv2.line(imgResult, (int(wT // 2 + (curve * 3)), int(midY - 25)), (int(wT // 2 + (curve * 3)), int(midY + 25)), (0, 255, 0), 5)
+for x in range(-30, 30):
+    w = wT // 20
+    cv2.line(imgResult, (int(w * x + (curve // 50)), int(midY - 10)),
+             (int(w * x + (curve // 50)), int(midY + 10)), (0, 0, 255), 2)
+
 
     if display == 2:
         imgStacked = utilities.stackImages(0.7, ([img, imgWarpPoints, imgWarp],
