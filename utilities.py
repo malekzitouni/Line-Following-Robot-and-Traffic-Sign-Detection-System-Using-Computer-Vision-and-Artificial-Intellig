@@ -29,9 +29,9 @@ def nothing(a):
 def initializeTrackbars(intialTracbarVals, wT, hT):
     cv2.namedWindow("Trackbars")
     cv2.resizeWindow("Trackbars", 360, 240)
-    cv2.createTrackbar("Width Top", "Trackbars", intialTracbarVals[0], wT // 2, nothing)
+    cv2.createTrackbar("Width Top", "Trackbars", intialTracbarVals[0], wT , nothing)
     cv2.createTrackbar("Height Top", "Trackbars", intialTracbarVals[1], hT, nothing)
-    cv2.createTrackbar("Width Bottom", "Trackbars", intialTracbarVals[2], wT // 2, nothing)
+    cv2.createTrackbar("Width Bottom", "Trackbars", intialTracbarVals[2], wT , nothing)
     cv2.createTrackbar("Height Bottom", "Trackbars", intialTracbarVals[3], hT, nothing)
 
 
