@@ -15,7 +15,7 @@ def getLaneCurve(img, display=2):
 
     #### STEP 2
     hT, wT, c = img.shape
-    points = utilities.valTrackbars()
+    points = utilities.valTrackbars(wT,hT)
     imgWarp = utilities.warpImg(imgThres, points, wT, hT)
     imgWarpPoints = utilities.drawPoints(imgCopy, points)
 
