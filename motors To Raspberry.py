@@ -18,9 +18,9 @@ class Motor():
         self.mySpeed=0
 
     def move(self,speed=0.5,turn=0,t=0):
-        ki=;
-        kp=;
-        kd=;
+        ki=;//during test
+        kp=;//during test
+        kd=;//during test
         i_right_error = 0;
         i_left_error = 0;
         speed *=100
